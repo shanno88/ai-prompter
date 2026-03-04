@@ -346,14 +346,23 @@ app.post('/api/export-word', async (req, res) => {
 
 // 健康检查
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Export server is running', endpoints: ['/api/export-word', '/api/export-json', '/api/export-kling'] });
+  res.json({ 
+    status: 'ok', 
+    message: 'Export server is running', 
+    endpoints: [
+      '/api/export-word', 
+      '/api/export-json', 
+      '/api/export-kling',
+      '/api/paddle/status'
+    ] 
+  });
 });
 
 // Paddle 路由
 app.use('/api/paddle', paddleRouter);
 
 // 启动服务器
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Export Server is running on http://localhost:${PORT}`);
   console.log(`📝 API endpoints:`);
   console.log(`   - http://localhost:${PORT}/api/export-word (Word 文档)`);
@@ -367,4 +376,9 @@ app.listen(PORT, () => {
 process.on('SIGINT', () => {
   console.log('\n👋 Export Server is shutting down gracefully...');
   process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 5000).unref?.();
 });

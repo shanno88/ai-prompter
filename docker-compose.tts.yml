@@ -1,0 +1,29 @@
+services:
+  vibevoice-tts:
+    image: marhensa/vibevoice-realtime-openai-api:latest
+    container_name: vibevoice-tts
+    ports:
+      - "8080:8080"
+    environment:
+      - MODEL_NAME=VibeVoice-Realtime-0.5B
+      - HOST=0.0.0.0
+      - PORT=8080
+    volumes:
+      - vibevoice-models:/app/models
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+volumes:
+  vibevoice-models:

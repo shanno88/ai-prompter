@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ai-teleprompter-backend
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      # 如果你本地 .env 里有东西，可以挂载或在这里填入
+      # 例如：
+      # OPENAI_API_KEY: ${OPENAI_API_KEY}
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend-next
+      dockerfile: Dockerfile
+      args:
+        DOCKER: "true"
+    container_name: ai-teleprompter-frontend
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DOCKER: "true"
+      # 如果 Next 用到的环境变量，也可以在这里注入
+      # NEXT_PUBLIC_xxx: ${NEXT_PUBLIC_xxx}
+    ports:
+      - "3002:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
