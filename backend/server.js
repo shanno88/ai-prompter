@@ -8,6 +8,8 @@ import cookieParser from 'cookie-parser';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import paddleRouter from './routes/paddle.js';
 import { convertScriptToKling } from './utils/mapToKling.js';
+import { getTeleprompterStatus } from './services/teleprompterBilling.js';
+import { generateUserId } from './services/paddleUserStore.js';
 
 const app = express();
 const PORT = 3001;
@@ -365,7 +367,43 @@ app.use('/api/paddle', paddleRouter);
 
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 
-app.post('/api/deepseek/chat', async (req, res) => {
+const checkTeleprompterAccess = async (req, res, next) => {
+  try {
+    let userId = req.cookies?.userId;
+    if (!userId) {
+      userId = generateUserId();
+      res.cookie('userId', userId, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 365 * 24 * 60 * 60 * 1000,
+      });
+    }
+
+    const status = await getTeleprompterStatus({ userId });
+    if (status?.isActive) return next();
+
+    return res.status(402).json({
+      error: {
+        code: 'TELEPROMPTER_ACCESS_DENIED',
+        message: 'Teleprompter trial expired or no active subscription.',
+        status: status?.status,
+        isActive: status?.isActive,
+        isTrial: status?.isTrial,
+        trialDaysLeft: status?.trialDaysLeft,
+      },
+    });
+  } catch (err) {
+    console.error('Teleprompter access check failed', err);
+    return res.status(500).json({
+      error: {
+        code: 'TELEPROMPTER_ACCESS_CHECK_FAILED',
+        message: 'Teleprompter access check failed',
+      },
+    });
+  }
+};
+
+app.post('/api/deepseek/chat', checkTeleprompterAccess, async (req, res) => {
   try {
     if (!DEEPSEEK_API_KEY) {
       return res.status(500).json({ error: { message: 'DEEPSEEK_API_KEY not set' } });

@@ -1,25 +1,9 @@
 import express from 'express';
 import crypto from 'crypto';
+import { generateUserId, getUserData, saveUserData } from '../services/paddleUserStore.js';
+import { getTeleprompterStatus } from '../services/teleprompterBilling.js';
 
 const router = express.Router();
-
-// 内存存储（实际应该使用数据库）
-const users = new Map();
-
-// 生成用户 ID
-function generateUserId() {
-  return 'user_' + Math.random().toString(36).substr(2, 9);
-}
-
-// 获取用户数据
-function getUserData(userId) {
-  return users.get(userId);
-}
-
-// 保存用户数据
-function saveUserData(userId, userData) {
-  users.set(userId, userData);
-}
 
 // Paddle Webhook 签名验证
 function verifyPaddleSignature(body, signature, secret) {
@@ -183,6 +167,13 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 // 查询订阅状态
 router.get('/status', async (req, res) => {
   try {
+    const app = req.query.app;
+    if (app === 'teleprompter') {
+      const userId = req.cookies.userId;
+      const status = await getTeleprompterStatus({ userId });
+      return res.json(status);
+    }
+
     const userId = req.cookies.userId;
 
     if (!userId) {
