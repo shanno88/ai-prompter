@@ -189,8 +189,7 @@ const App = () => {
   // AI 配置状态 - API Key 从环境变量读取
   const [aiConfig] = useState({
     provider: 'deepseek',
-    apiKey: process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY || '',
-    baseUrl: 'https://api.deepseek.com/chat/completions',
+    baseUrl: '/api/deepseek/chat',
     model: 'deepseek-chat'
   });
 
@@ -332,7 +331,6 @@ ${userContent || '（请补充产品信息、目标人群、核心卖点等）'}
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${aiConfig.apiKey}`
           },
           body: JSON.stringify({
             model: aiConfig.model,
@@ -439,11 +437,6 @@ ${userContent || '（请补充产品信息、目标人群、核心卖点等）'}
 
     if (!requireAllowed()) return;
 
-    if (!aiConfig.apiKey) {
-      showMessage('未检测到 API Key，请在 .env.local 文件中配置 NEXT_PUBLIC_DEEPSEEK_API_KEY。');
-      return;
-    }
-
     setIsAiLoading(true);
     setAiStatus('AI 正在扫描违禁词...');
 
@@ -460,7 +453,7 @@ ${userContent || '（请补充产品信息、目标人群、核心卖点等）'}
     try {
       const response = await fetch(aiConfig.baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${aiConfig.apiKey}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: aiConfig.model,
           messages: [{ role: "system", content: systemPrompt }, { role: "user", content: cleanText }],
@@ -514,11 +507,6 @@ ${userContent || '（请补充产品信息、目标人群、核心卖点等）'}
 
     // 去掉权限校验，直接执行
     // if (!checkPermission()) return;
-
-    if (!aiConfig.apiKey) {
-      showMessage('未检测到 API Key，请联系管理员或在设置中配置自定义 Key。');
-      return;
-    }
 
     setIsAiLoading(true);
     setAiStatus('AI 正在改写文案...');
@@ -593,7 +581,7 @@ ${currentRule}
     try {
       const response = await fetch(aiConfig.baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${aiConfig.apiKey}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: aiConfig.model,
           messages: [{ role: "system", content: systemPrompt }, { role: "user", content: cleanText }],
@@ -634,11 +622,6 @@ ${currentRule}
     // 去掉权限校验，直接执行
     // if (!checkPermission()) return;
 
-    if (!aiConfig.apiKey) {
-      showMessage('未检测到 API Key，请联系管理员或在设置中配置自定义 Key。');
-      return;
-    }
-
     setIsAiLoading(true);
     setAiStatus('AI 正在添加播感标注...');
 
@@ -664,7 +647,7 @@ ${rolePrompt}
     try {
       const response = await fetch(aiConfig.baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${aiConfig.apiKey}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: aiConfig.model,
           messages: [{ role: "system", content: systemPrompt }, { role: "user", content: cleanText }],
@@ -700,11 +683,6 @@ ${rolePrompt}
   const generateSeedancePrompt = async () => {
     playClickSound();
 
-    if (!aiConfig.apiKey) {
-      showMessage('未检测到 API Key，请联系管理员或在设置中配置自定义 Key。');
-      return;
-    }
-
     if (!seedanceInput || seedanceInput.trim().length === 0) {
       showMessage('请输入场景描述。');
       return;
@@ -726,7 +704,7 @@ ${rolePrompt}
     try {
       const response = await fetch(aiConfig.baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${aiConfig.apiKey}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: aiConfig.model,
           messages: [{ role: "system", content: systemPrompt }, { role: "user", content: seedanceInput }],
@@ -762,11 +740,6 @@ ${rolePrompt}
   const generateViralTitle = async () => {
     playClickSound();
 
-    if (!aiConfig.apiKey) {
-      showMessage('未检测到 API Key，请联系管理员或在设置中配置自定义 Key。');
-      return;
-    }
-
     if (!viralTitleInput || viralTitleInput.trim().length === 0) {
       showMessage('请输入主题描述。');
       return;
@@ -781,7 +754,7 @@ ${rolePrompt}
     try {
       const response = await fetch(aiConfig.baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${aiConfig.apiKey}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: aiConfig.model,
           messages: [{ role: "system", content: systemPrompt }, { role: "user", content: viralTitleInput }],
@@ -817,11 +790,6 @@ ${rolePrompt}
   const generateCoverPrompt = async () => {
     playClickSound();
 
-    if (!aiConfig.apiKey) {
-      showMessage('未检测到 API Key，请联系管理员或在设置中配置自定义 Key。');
-      return;
-    }
-
     if (!coverPromptInput || coverPromptInput.trim().length === 0) {
       showMessage('请输入画面描述。');
       return;
@@ -836,7 +804,7 @@ ${rolePrompt}
     try {
       const response = await fetch(aiConfig.baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${aiConfig.apiKey}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: aiConfig.model,
           messages: [{ role: "system", content: systemPrompt }, { role: "user", content: coverPromptInput }],

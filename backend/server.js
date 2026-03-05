@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
-dotenv.config({ path: '../.env' });
+dotenv.config();
 import express from 'express';
+import fetch from 'node-fetch';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
@@ -13,6 +14,7 @@ const PORT = 3001;
 
 // 中间件配置
 app.use(cors());
+app.use(express.json());
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(cookieParser());
 
@@ -360,6 +362,37 @@ app.get('/health', (req, res) => {
 
 // Paddle 路由
 app.use('/api/paddle', paddleRouter);
+
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+
+app.post('/api/deepseek/chat', async (req, res) => {
+  try {
+    if (!DEEPSEEK_API_KEY) {
+      return res.status(500).json({ error: { message: 'DEEPSEEK_API_KEY not set' } });
+    }
+
+    const dsRes = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${DEEPSEEK_API_KEY}`,
+      },
+      body: JSON.stringify(req.body),
+    });
+
+    const text = await dsRes.text();
+
+    try {
+      const json = JSON.parse(text);
+      res.status(dsRes.status).json(json);
+    } catch (e) {
+      res.status(dsRes.status).send(text);
+    }
+  } catch (err) {
+    console.error('DeepSeek proxy error', err);
+    res.status(500).json({ error: { message: 'DeepSeek proxy failed' } });
+  }
+});
 
 // 启动服务器
 const server = app.listen(PORT, () => {

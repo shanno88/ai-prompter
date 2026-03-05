@@ -165,8 +165,7 @@ const App = () => {
   // AI 配置状态 - API Key 从环境变量读取
   const [aiConfig] = useState({
     provider: 'deepseek',
-    apiKey: process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY || '',
-    baseUrl: 'https://api.deepseek.com/chat/completions',
+    baseUrl: '/api/deepseek/chat',
     model: 'deepseek-chat'
   });
   const TTS_PROVIDERS = {
@@ -382,10 +381,6 @@ const App = () => {
     playClickSound();
     // 权限校验
     if (!requireAllowed()) return;
-    if (!aiConfig.apiKey) {
-      showMessage('未检测到 API Key，请联系管理员或在设置中配置自定义 Key。');
-      return;
-    }
     setIsAiLoading(true);
     setAiStatus('AI 正在扫描违禁词...');
     const systemPrompt = `你是一位专业的内容风控专家，熟悉广告法和平台审核规则。
@@ -399,7 +394,7 @@ const App = () => {
     try {
       const response = await fetch(aiConfig.baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${aiConfig.apiKey}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: aiConfig.model,
           messages: [{ role: "system", content: systemPrompt }, { role: "user", content: cleanText }],
@@ -443,10 +438,6 @@ const App = () => {
     playClickSound();
     // 权限校验
     if (!requireAllowed()) return;
-    if (!aiConfig.apiKey) {
-      showMessage('未检测到 API Key，请联系管理员或在设置中配置自定义 Key。');
-      return;
-    }
     setIsAiLoading(true);
     setAiStatus('AI 正在改写文案...');
     // 使用当前模式的自定义规则
@@ -472,7 +463,7 @@ ${currentRule}
     try {
       const response = await fetch(aiConfig.baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${aiConfig.apiKey}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: aiConfig.model,
           messages: [{ role: "system", content: systemPrompt }, { role: "user", content: cleanText }],
@@ -504,10 +495,6 @@ ${currentRule}
     playClickSound();
     // 权限校验
     if (!requireAllowed()) return;
-    if (!aiConfig.apiKey) {
-      showMessage('未检测到 API Key，请联系管理员或在设置中配置自定义 Key。');
-      return;
-    }
     setIsAiLoading(true);
     setAiStatus('AI 正在添加播感标注...');
     let rolePrompt = "";
@@ -529,7 +516,7 @@ ${rolePrompt}
     try {
       const response = await fetch(aiConfig.baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${aiConfig.apiKey}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: aiConfig.model,
           messages: [{ role: "system", content: systemPrompt }, { role: "user", content: cleanText }],
